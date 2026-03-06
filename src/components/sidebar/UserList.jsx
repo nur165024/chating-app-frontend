@@ -11,7 +11,8 @@ export const UserList = () => {
   if (isLoading) return <Loader />;
   if (error) return <ErrorMessage message={error.message} />;
 
-  const conversations = data?.data || [];
+  const conversations = data?.data?.conversations || [];
+  
 
   return (
     <div className="flex-1 overflow-y-auto">

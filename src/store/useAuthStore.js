@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { STORAGE_KEYS, storage } from '../utils/storage';
+import { STORAGE_KEYS } from '../utils/constants';
+import { storage } from '../utils/storage';
 
 export const useAuthStore = create((set) => ({
   user: storage.get(STORAGE_KEYS.USER),
