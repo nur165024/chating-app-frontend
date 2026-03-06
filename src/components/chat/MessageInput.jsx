@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
+import { useMessages } from '../../hooks/queries/useMessageQuery';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useChatStore } from '../../store/useChatStore';
 import { useSocketStore } from '../../store/useSocketStore';
 
@@ -7,15 +9,24 @@ export const MessageInput = () => {
   const [message, setMessage] = useState('');
   const activeConversation = useChatStore(state => state.activeConversation);
   const socket = useSocketStore(state => state.socket);
+  const user = useAuthStore(state => state.user);
+  const { data } = useMessages(activeConversation?.id);
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault(); 
     
-    if (!message.trim() || !activeConversation || !socket) {
-      console.log('Validation failed');
-      return;
-    }
+    if (!message.trim() || !activeConversation || !socket) return;
 
+    // Mark unread messages as read before sending
+    const unreadMessages = data?.data?.messages?.filter(
+      msg => msg.receiverId === user?.id && !msg.isRead
+    ) || [];
+
+    unreadMessages.forEach(msg => {
+      socket.emit('message:read', { messageId: msg.id });
+    });
+
+    // Send new message
     socket.emit('message:send', {
       conversationId: activeConversation.id,
       receiverId: activeConversation.otherParticipant.id,
@@ -23,8 +34,7 @@ export const MessageInput = () => {
     });
 
     setMessage('');
-  }, [message, activeConversation, socket]);
-
+  }, [message, activeConversation, socket, user, data]);
 
   return (
     <form className="flex gap-3 p-4 bg-white border-t" onSubmit={handleSubmit}>
