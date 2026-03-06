@@ -5,9 +5,10 @@ export const conversationAPI = {
   
   getConversationById: (id) => axiosInstance.get(`/conversations/${id}`),
   
-  createConversation: (participantId) => 
-    axiosInstance.post('/conversations', { participantId }),
+  createConversation: (data) => 
+    axiosInstance.post('/conversations', data),
   
   markAsRead: (conversationId) => 
     axiosInstance.patch(`/conversations/${conversationId}/read`)
 };
+

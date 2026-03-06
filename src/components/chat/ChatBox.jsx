@@ -4,7 +4,7 @@ import { MessageInput } from './MessageInput';
 import { MessageList } from './MessageList';
 
 export const ChatBox = () => {
-  const { activeConversation, onlineUsers } = useChatStore();
+  const { activeConversation } = useChatStore();
 
   if (!activeConversation) {
     return (
@@ -14,8 +14,8 @@ export const ChatBox = () => {
     );
   }
 
-  const otherUser = activeConversation.otherUser;
-  const isOnline = onlineUsers.includes(otherUser?.id);
+  const otherUser = activeConversation.otherParticipant;
+  const isOnline = otherUser?.isOnline;
 
   return (
     <div className="flex-1 flex flex-col">

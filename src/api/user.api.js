@@ -1,7 +1,7 @@
 import axiosInstance from './axios.config';
 
 export const userAPI = {
-  getUsers: (search = '') => 
+  getAllUsers: (search = '') => 
     axiosInstance.get('/users', { params: { search } }),
   
   getUserById: (id) => axiosInstance.get(`/users/${id}`),
@@ -11,3 +11,4 @@ export const userAPI = {
   updateOnlineStatus: (isOnline) => 
     axiosInstance.patch('/users/online-status', { isOnline })
 };
+

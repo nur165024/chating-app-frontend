@@ -10,9 +10,6 @@ export const useSocketStore = create((set) => ({
   setConnected: (status) => 
     set({ isConnected: status }),
 
-  disconnect: () =>
-    set((state) => {
-      state.socket?.disconnect();
-      return { socket: null, isConnected: false };
-    })
+  disconnect: () => set({ socket: null, isConnected: false })
+
 }));

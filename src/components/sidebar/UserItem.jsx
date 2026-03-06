@@ -1,11 +1,9 @@
-import { useChatStore } from '../../store/useChatStore';
 import { formatMessageTime } from '../../utils/helpers';
 import { Avatar } from '../common/Avatar';
 
 export const UserItem = ({ conversation, onClick }) => {
-  const { onlineUsers } = useChatStore();
-  const otherUser = conversation.otherUser;
-  const isOnline = onlineUsers.includes(otherUser?.id);
+  const otherUser = conversation.otherParticipant;
+  const isOnline = otherUser?.isOnline;
 
   return (
     <div

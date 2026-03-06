@@ -5,7 +5,8 @@ import { QUERY_KEYS } from '../../utils/constants';
 export const useUsers = (search = '') => {
   return useQuery({
     queryKey: [QUERY_KEYS.USERS, search],
-    queryFn: () => userAPI.getUsers(search)
+    queryFn: () => userAPI.getAllUsers(search),
+    enabled: search.length > 0
   });
 };
 

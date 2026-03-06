@@ -15,7 +15,7 @@ export const MessageItem = ({ message }) => {
       >
         <p className="mb-1">{message.content}</p>
         <div className="flex items-center gap-1 text-xs opacity-80">
-          <span>{formatMessageTime(message.createdAt)}</span>
+          <span>{formatMessageTime(message.updatedAt)}</span>
           {isSent && (
             <span>
               {message.status === 'READ' ? (

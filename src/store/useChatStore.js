@@ -3,7 +3,6 @@ import { create } from 'zustand';
 export const useChatStore = create((set) => ({
   activeConversation: null,
   typingUsers: {},
-  onlineUsers: [],
 
   setActiveConversation: (conversation) => 
     set({ activeConversation: conversation }),
@@ -17,18 +16,5 @@ export const useChatStore = create((set) => ({
         ...state.typingUsers,
         [userId]: isTyping
       }
-    })),
-
-  setOnlineUsers: (users) => 
-    set({ onlineUsers: users }),
-
-  addOnlineUser: (userId) =>
-    set((state) => ({
-      onlineUsers: [...new Set([...state.onlineUsers, userId])]
-    })),
-
-  removeOnlineUser: (userId) =>
-    set((state) => ({
-      onlineUsers: state.onlineUsers.filter(id => id !== userId)
     }))
 }));

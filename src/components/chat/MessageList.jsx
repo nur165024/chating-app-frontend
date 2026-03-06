@@ -21,7 +21,7 @@ export const MessageList = () => {
   if (isLoading) return <Loader />;
   if (error) return <ErrorMessage message={error.message} />;
 
-  const messages = data?.data || [];
+  const messages = data?.data?.messages  || [];
 
   return (
     <div className="flex-1 overflow-y-auto p-5 bg-gray-50">
