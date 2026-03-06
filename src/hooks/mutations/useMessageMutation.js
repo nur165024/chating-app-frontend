@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { messageAPI } from '../../api/message.api';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useSocketStore } from '../../store/useSocketStore';
 import { QUERY_KEYS } from '../../utils/constants';
 
 export const useSendMessage = () => {
@@ -10,13 +11,9 @@ export const useSendMessage = () => {
   return useMutation({
     mutationFn: messageAPI.sendMessage,
     onMutate: async (newMessage) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries([QUERY_KEYS.MESSAGES, newMessage.conversationId]);
-
-      // Snapshot previous value
       const previousMessages = queryClient.getQueryData([QUERY_KEYS.MESSAGES, newMessage.conversationId]);
 
-      // Optimistically update
       queryClient.setQueryData([QUERY_KEYS.MESSAGES, newMessage.conversationId], (old) => {
         if (!old) return old;
         return {
@@ -43,12 +40,28 @@ export const useSendMessage = () => {
       return { previousMessages };
     },
     onError: (err, newMessage, context) => {
-      // Rollback on error
       queryClient.setQueryData([QUERY_KEYS.MESSAGES, newMessage.conversationId], context.previousMessages);
     },
     onSettled: (data, error, variables) => {
-      // Refetch to get real data from server
       queryClient.invalidateQueries([QUERY_KEYS.MESSAGES, variables.conversationId]);
+      queryClient.invalidateQueries([QUERY_KEYS.CONVERSATIONS]);
+    }
+  });
+};
+
+export const useMarkMessagesAsRead = () => {
+  const queryClient = useQueryClient();
+  const socket = useSocketStore(state => state.socket);
+
+  return useMutation({
+    mutationFn: (messageIds) => {
+      messageIds.forEach(id => {
+        socket?.emit('message:read', { messageId: id });
+      });
+      return Promise.resolve();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.MESSAGES]);
       queryClient.invalidateQueries([QUERY_KEYS.CONVERSATIONS]);
     }
   });

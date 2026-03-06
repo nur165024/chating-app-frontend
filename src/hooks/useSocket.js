@@ -12,10 +12,9 @@ export const useSocket = () => {
   const isInitialized = useRef(false);
 
   const handleMessageReceived = useCallback((message) => {
-    console.log('🔵 message:received event triggered', message);
     queryClient.invalidateQueries({ 
       queryKey: [QUERY_KEYS.MESSAGES, message.conversationId],
-      exact: false  // exact: false করুন যাতে সব page invalidate হয়
+      exact: false
     });
     queryClient.invalidateQueries({ 
       queryKey: [QUERY_KEYS.CONVERSATIONS], 
@@ -24,10 +23,9 @@ export const useSocket = () => {
   }, [queryClient]);
 
   const handleMessageSent = useCallback((message) => {
-    console.log('🟢 message:sent event triggered', message);
     queryClient.invalidateQueries({ 
       queryKey: [QUERY_KEYS.MESSAGES, message.conversationId],
-      exact: false  // exact: false করুন
+      exact: false
     });
     queryClient.invalidateQueries({ 
       queryKey: [QUERY_KEYS.CONVERSATIONS], 

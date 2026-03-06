@@ -1,5 +1,7 @@
 import { memo, useEffect, useRef } from 'react';
+import { useMarkMessagesAsRead } from '../../hooks/mutations/useMessageMutation';
 import { useMessages } from '../../hooks/queries/useMessageQuery';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useChatStore } from '../../store/useChatStore';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { Loader } from '../common/Loader';
@@ -7,16 +9,34 @@ import { MessageItem } from './MessageItem';
 
 export const MessageList = memo(() => {
   const activeConversation = useChatStore(state => state.activeConversation);
+  const user = useAuthStore(state => state.user);
   const { data, isLoading, error } = useMessages(activeConversation?.id);
+  const markAsRead = useMarkMessagesAsRead();
   const messagesEndRef = useRef(null);
-  const prevConversationId = useRef(null);
+  const hasMarked = useRef(false);
 
   useEffect(() => {
-    if (data?.data?.messages && prevConversationId.current !== activeConversation?.id) {
+    if (data?.data?.messages?.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      prevConversationId.current = activeConversation?.id;
+      
+      // Mark as read only once per conversation
+      if (!hasMarked.current && activeConversation) {
+        const unreadIds = data.data.messages
+          .filter(msg => msg.receiverId === user?.id && !msg.isRead)
+          .map(msg => msg.id);
+        
+        if (unreadIds.length > 0) {
+          markAsRead.mutate(unreadIds);
+          hasMarked.current = true;
+        }
+      }
     }
-  }, [data, activeConversation?.id]);
+  }, [data?.data?.messages?.length, activeConversation?.id]);
+
+  // Reset when conversation changes
+  useEffect(() => {
+    hasMarked.current = false;
+  }, [activeConversation?.id]);
 
   if (isLoading) return <Loader />;
   if (error) return <ErrorMessage message={error.message} />;
