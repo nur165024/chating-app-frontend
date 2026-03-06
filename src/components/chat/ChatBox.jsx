@@ -1,3 +1,4 @@
+import { useConversations } from '../../hooks/queries/useConversationQuery';
 import { useChatStore } from '../../store/useChatStore';
 import { Avatar } from '../common/Avatar';
 import { MessageInput } from './MessageInput';
@@ -5,6 +6,7 @@ import { MessageList } from './MessageList';
 
 export const ChatBox = () => {
   const { activeConversation } = useChatStore();
+  const { data } = useConversations();
 
   if (!activeConversation) {
     return (
@@ -14,7 +16,12 @@ export const ChatBox = () => {
     );
   }
 
-  const otherUser = activeConversation.otherParticipant;
+  // Get fresh data from query
+  const freshConversation = data?.data?.conversations?.find(
+    c => c.id === activeConversation.id
+  ) || activeConversation;
+
+  const otherUser = freshConversation.otherParticipant;
   const isOnline = otherUser?.isOnline;
 
   return (

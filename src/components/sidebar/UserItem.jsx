@@ -31,7 +31,9 @@ export const UserItem = memo(({ conversation, onClick }) => {
 }, (prevProps, nextProps) => {
   return prevProps.conversation.id === nextProps.conversation.id &&
          prevProps.conversation.unreadCount === nextProps.conversation.unreadCount &&
-         prevProps.conversation.updatedAt === nextProps.conversation.updatedAt;
+         prevProps.conversation.updatedAt === nextProps.conversation.updatedAt &&
+         prevProps.conversation.otherParticipant?.isOnline === nextProps.conversation.otherParticipant?.isOnline;
 });
+
 
 UserItem.displayName = 'UserItem';
