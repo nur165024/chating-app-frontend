@@ -12,29 +12,33 @@ export const MessageInput = () => {
   const user = useAuthStore(state => state.user);
   const { data } = useMessages(activeConversation?.id);
 
+  // Mark as read when input is focused
+  const handleFocus = useCallback(() => {
+    if (!socket || !user || !data?.data?.messages) return;
+
+    const unreadMessages = data.data.messages.filter(
+      msg => msg.receiverId === user.id && !msg.isRead
+    );
+
+    unreadMessages.forEach(msg => {
+      socket.emit('message:read', { messageId: msg.id });
+    });
+  }, [socket, user, data]);
+
   const handleSubmit = useCallback((e) => {
     e.preventDefault(); 
     
     if (!message.trim() || !activeConversation?.otherParticipant || !socket) return;
 
-    // Mark unread messages as read before sending
-    const unreadMessages = data?.data?.messages?.filter(
-      msg => msg.receiverId === user?.id && !msg.isRead
-    ) || [];
-
-    unreadMessages.forEach(msg => {
-      socket.emit('message:read', { messageId: msg.id });
-    });
-
-    // Send new message
+    // Send message
     socket.emit('message:send', {
       conversationId: activeConversation.id,
-      receiverId: activeConversation.otherParticipant?.id, // Optional chaining
+      receiverId: activeConversation.otherParticipant?.id,
       content: message.trim()
     });
 
     setMessage('');
-  }, [message, activeConversation, socket, user, data]);
+  }, [message, activeConversation, socket]);
 
   return (
     <form className="flex gap-3 p-4 bg-white border-t" onSubmit={handleSubmit}>
@@ -43,6 +47,7 @@ export const MessageInput = () => {
         placeholder="Type a message..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        onFocus={handleFocus}
         className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button

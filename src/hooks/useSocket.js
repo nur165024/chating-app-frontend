@@ -33,7 +33,17 @@ export const useSocket = () => {
     });
   }, [queryClient]);
 
-
+  const handleMessageRead = useCallback(({ messageId, conversationId }) => {
+    // Update message status and conversation unread count
+    queryClient.invalidateQueries({ 
+      queryKey: [QUERY_KEYS.MESSAGES],
+      exact: false
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: [QUERY_KEYS.CONVERSATIONS], 
+      exact: false 
+    });
+  }, [queryClient]);
 
   useEffect(() => {
     if (!token || isInitialized.current) return;
@@ -56,6 +66,7 @@ export const useSocket = () => {
 
     newSocket.on('message:received', handleMessageReceived);
     newSocket.on('message:sent', handleMessageSent);
+    newSocket.on('message:read', handleMessageRead);
 
     setSocket(newSocket);
 
@@ -65,9 +76,10 @@ export const useSocket = () => {
       newSocket.off('disconnect');
       newSocket.off('message:received');
       newSocket.off('message:sent');
+      newSocket.off('message:read');
       newSocket.disconnect();
     };
-  }, [token, setSocket, setConnected, handleMessageReceived, handleMessageSent]);
+  }, [token, setSocket, setConnected, handleMessageReceived, handleMessageSent, handleMessageRead]);
 
   return socket;
 };
