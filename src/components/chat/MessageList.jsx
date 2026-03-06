@@ -24,9 +24,9 @@ export const MessageList = () => {
   const messages = data?.data || [];
 
   return (
-    <div className="message-list">
+    <div className="flex-1 overflow-y-auto p-5 bg-gray-50">
       {messages.length === 0 ? (
-        <p style={{ textAlign: 'center', padding: '20px' }}>No messages yet. Start the conversation!</p>
+        <p className="text-center p-5 text-gray-500">No messages yet. Start the conversation!</p>
       ) : (
         messages.map((message) => (
           <MessageItem key={message.id} message={message} />

@@ -8,7 +8,7 @@ export const ChatPage = () => {
 
   return (
     <Layout>
-      <div className="chat-page">
+      <div className="flex h-full">
         <Sidebar />
         <ChatBox />
       </div>

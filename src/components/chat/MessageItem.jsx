@@ -7,15 +7,19 @@ export const MessageItem = ({ message }) => {
   const isSent = message.senderId === user?.id;
 
   return (
-    <div className={`message-item ${isSent ? 'sent' : 'received'}`}>
-      <div className="message-content">
-        <p>{message.content}</p>
-        <div className="message-meta">
+    <div className={`flex mb-4 ${isSent ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`max-w-[60%] px-4 py-2 rounded-lg ${
+          isSent ? 'bg-blue-500 text-white' : 'bg-white text-gray-800 border'
+        }`}
+      >
+        <p className="mb-1">{message.content}</p>
+        <div className="flex items-center gap-1 text-xs opacity-80">
           <span>{formatMessageTime(message.createdAt)}</span>
           {isSent && (
-            <span className="message-status">
+            <span>
               {message.status === 'READ' ? (
-                <FaCheckDouble color="#4caf50" />
+                <FaCheckDouble className="text-green-400" />
               ) : message.status === 'DELIVERED' ? (
                 <FaCheckDouble />
               ) : (

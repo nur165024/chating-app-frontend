@@ -2,9 +2,9 @@ import { Header } from './Header';
 
 export const Layout = ({ children }) => {
   return (
-    <div className="layout">
+    <div className="flex flex-col h-screen">
       <Header />
-      <main className="main-content">{children}</main>
+      <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   );
 };
