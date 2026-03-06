@@ -108,7 +108,7 @@ chating-app-frontend/
 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/nur165024/chating-app-frontend.git
 cd chating-app/chating-app-frontend
 ```
 
