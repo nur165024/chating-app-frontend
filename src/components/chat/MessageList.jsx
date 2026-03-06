@@ -1,27 +1,27 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useMessages } from '../../hooks/queries/useMessageQuery';
 import { useChatStore } from '../../store/useChatStore';
 import { ErrorMessage } from '../common/ErrorMessage';
 import { Loader } from '../common/Loader';
 import { MessageItem } from './MessageItem';
 
-export const MessageList = () => {
-  const { activeConversation } = useChatStore();
+export const MessageList = memo(() => {
+  const activeConversation = useChatStore(state => state.activeConversation);
   const { data, isLoading, error } = useMessages(activeConversation?.id);
   const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const prevConversationId = useRef(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [data]);
+    if (data?.data?.messages && prevConversationId.current !== activeConversation?.id) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      prevConversationId.current = activeConversation?.id;
+    }
+  }, [data, activeConversation?.id]);
 
   if (isLoading) return <Loader />;
   if (error) return <ErrorMessage message={error.message} />;
 
-  const messages = data?.data?.messages  || [];
+  const messages = data?.data?.messages || [];
 
   return (
     <div className="flex-1 overflow-y-auto p-5 bg-gray-50">
@@ -35,4 +35,6 @@ export const MessageList = () => {
       <div ref={messagesEndRef} />
     </div>
   );
-};
+});
+
+MessageList.displayName = 'MessageList';

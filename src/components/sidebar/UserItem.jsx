@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { formatMessageTime } from '../../utils/helpers';
 import { Avatar } from '../common/Avatar';
 
-export const UserItem = ({ conversation, onClick }) => {
+export const UserItem = memo(({ conversation, onClick }) => {
   const otherUser = conversation.otherParticipant;
   const isOnline = otherUser?.isOnline;
 
@@ -27,4 +28,10 @@ export const UserItem = ({ conversation, onClick }) => {
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.conversation.id === nextProps.conversation.id &&
+         prevProps.conversation.unreadCount === nextProps.conversation.unreadCount &&
+         prevProps.conversation.updatedAt === nextProps.conversation.updatedAt;
+});
+
+UserItem.displayName = 'UserItem';

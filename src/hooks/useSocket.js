@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuthStore } from '../store/useAuthStore';
 import { useSocketStore } from '../store/useSocketStore';
@@ -9,12 +9,38 @@ export const useSocket = () => {
   const { socket, setSocket, setConnected } = useSocketStore();
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
-  const isConnecting = useRef(false);
+  const isInitialized = useRef(false);
+
+  const handleMessageReceived = useCallback((message) => {
+    console.log('🔵 message:received event triggered', message);
+    queryClient.invalidateQueries({ 
+      queryKey: [QUERY_KEYS.MESSAGES, message.conversationId],
+      exact: false  // exact: false করুন যাতে সব page invalidate হয়
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: [QUERY_KEYS.CONVERSATIONS], 
+      exact: false 
+    });
+  }, [queryClient]);
+
+  const handleMessageSent = useCallback((message) => {
+    console.log('🟢 message:sent event triggered', message);
+    queryClient.invalidateQueries({ 
+      queryKey: [QUERY_KEYS.MESSAGES, message.conversationId],
+      exact: false  // exact: false করুন
+    });
+    queryClient.invalidateQueries({ 
+      queryKey: [QUERY_KEYS.CONVERSATIONS], 
+      exact: false 
+    });
+  }, [queryClient]);
+
+
 
   useEffect(() => {
-    if (!token || socket || isConnecting.current) return;
+    if (!token || isInitialized.current) return;
 
-    isConnecting.current = true;
+    isInitialized.current = true;
 
     const newSocket = io(SOCKET_URL, {
       auth: { token }
@@ -22,48 +48,28 @@ export const useSocket = () => {
 
     newSocket.on('connect', () => {
       setConnected(true);
-      console.log('Socket connected');
+      console.log('✅ Socket connected');
     });
 
     newSocket.on('disconnect', () => {
       setConnected(false);
-      console.log('Socket disconnected');
+      console.log('❌ Socket disconnected');
     });
 
-    newSocket.on('message:received', (message) => {
-      queryClient.setQueryData([QUERY_KEYS.MESSAGES, message.conversationId], (old) => {
-        if (!old) return old;
-        const exists = old.data?.messages?.some(m => m.id === message.id);
-        if (exists) return old;
-        
-        return {
-          ...old,
-          data: {
-            ...old.data,
-            messages: [...(old.data?.messages || []), message]
-          }
-        };
-      });
-      
-      queryClient.invalidateQueries([QUERY_KEYS.CONVERSATIONS]);
-    });
-
-    newSocket.on('message:sent', (message) => {
-      queryClient.invalidateQueries([QUERY_KEYS.MESSAGES, message.conversationId]);
-    });
-
-    newSocket.on('message:read', ({ messageId }) => {
-      queryClient.invalidateQueries([QUERY_KEYS.MESSAGES]);
-    });
+    newSocket.on('message:received', handleMessageReceived);
+    newSocket.on('message:sent', handleMessageSent);
 
     setSocket(newSocket);
-    isConnecting.current = false;
 
     return () => {
+      isInitialized.current = false;
+      newSocket.off('connect');
+      newSocket.off('disconnect');
+      newSocket.off('message:received');
+      newSocket.off('message:sent');
       newSocket.disconnect();
-      isConnecting.current = false;
     };
-  }, [token]);
+  }, [token, setSocket, setConnected, handleMessageReceived, handleMessageSent]);
 
   return socket;
 };

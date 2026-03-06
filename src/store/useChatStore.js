@@ -1,20 +1,17 @@
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 
-export const useChatStore = create((set) => ({
-  activeConversation: null,
-  typingUsers: {},
+export const useChatStore = create(
+  devtools(
+    (set) => ({
+      activeConversation: null,
+      
+      setActiveConversation: (conversation) => 
+        set({ activeConversation: conversation }, false, 'setActiveConversation'),
 
-  setActiveConversation: (conversation) => 
-    set({ activeConversation: conversation }),
-
-  clearActiveConversation: () => 
-    set({ activeConversation: null }),
-
-  setTyping: (userId, isTyping) =>
-    set((state) => ({
-      typingUsers: {
-        ...state.typingUsers,
-        [userId]: isTyping
-      }
-    }))
-}));
+      clearActiveConversation: () => 
+        set({ activeConversation: null }, false, 'clearActiveConversation')
+    }),
+    { name: 'ChatStore' }
+  )
+);

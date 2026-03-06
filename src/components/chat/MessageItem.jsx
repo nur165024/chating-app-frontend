@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { FaCheck, FaCheckDouble } from 'react-icons/fa';
 import { useAuthStore } from '../../store/useAuthStore';
 import { formatMessageTime } from '../../utils/helpers';
 
-export const MessageItem = ({ message }) => {
-  const { user } = useAuthStore();
+export const MessageItem = memo(({ message }) => {
+  const user = useAuthStore(state => state.user);
   const isSent = message.senderId === user?.id;
 
   return (
@@ -15,7 +16,7 @@ export const MessageItem = ({ message }) => {
       >
         <p className="mb-1">{message.content}</p>
         <div className="flex items-center gap-1 text-xs opacity-80">
-          <span>{formatMessageTime(message.updatedAt)}</span>
+          <span>{formatMessageTime(message.createdAt || message.updatedAt)}</span>
           {isSent && (
             <span>
               {message.status === 'READ' ? (
@@ -31,4 +32,9 @@ export const MessageItem = ({ message }) => {
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.message.id === nextProps.message.id &&
+         prevProps.message.status === nextProps.message.status;
+});
+
+MessageItem.displayName = 'MessageItem';

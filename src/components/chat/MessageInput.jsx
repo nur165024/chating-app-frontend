@@ -1,25 +1,30 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { useChatStore } from '../../store/useChatStore';
 import { useSocketStore } from '../../store/useSocketStore';
 
 export const MessageInput = () => {
   const [message, setMessage] = useState('');
-  const { activeConversation } = useChatStore();
-  const { socket } = useSocketStore();
+  const activeConversation = useChatStore(state => state.activeConversation);
+  const socket = useSocketStore(state => state.socket);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!message.trim() || !activeConversation) return;
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault(); 
+    
+    if (!message.trim() || !activeConversation || !socket) {
+      console.log('Validation failed');
+      return;
+    }
 
-    socket?.emit('message:send', {
+    socket.emit('message:send', {
       conversationId: activeConversation.id,
       receiverId: activeConversation.otherParticipant.id,
       content: message.trim()
     });
 
     setMessage('');
-  };
+  }, [message, activeConversation, socket]);
+
 
   return (
     <form className="flex gap-3 p-4 bg-white border-t" onSubmit={handleSubmit}>
@@ -40,4 +45,3 @@ export const MessageInput = () => {
     </form>
   );
 };
-

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useConversations } from '../../hooks/queries/useConversationQuery';
 import { useChatStore } from '../../store/useChatStore';
 import { ErrorMessage } from '../common/ErrorMessage';
@@ -6,13 +7,16 @@ import { UserItem } from './UserItem';
 
 export const UserList = () => {
   const { data, isLoading, error } = useConversations();
-  const setActiveConversation = useChatStore((state) => state.setActiveConversation);
+  const setActiveConversation = useChatStore(state => state.setActiveConversation);
+
+  const handleConversationClick = useCallback((conversation) => {
+    setActiveConversation(conversation);
+  }, [setActiveConversation]);
 
   if (isLoading) return <Loader />;
   if (error) return <ErrorMessage message={error.message} />;
 
   const conversations = data?.data?.conversations || [];
-  
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -23,7 +27,7 @@ export const UserList = () => {
           <UserItem
             key={conv.id}
             conversation={conv}
-            onClick={() => setActiveConversation(conv)}
+            onClick={() => handleConversationClick(conv)}
           />
         ))
       )}
