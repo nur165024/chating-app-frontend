@@ -1,5 +1,6 @@
 import { useCreateConversation } from '../../hooks/mutations/useConversationMutation';
 import { useUsers } from '../../hooks/queries/useUserQuery';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useChatStore } from '../../store/useChatStore';
 import { Loader } from '../common/Loader';
 
@@ -7,10 +8,32 @@ export const AllUsersList = ({ search }) => {
   const { data, isLoading } = useUsers(search);
   const createConversation = useCreateConversation();
   const setActiveConversation = useChatStore(s => s.setActiveConversation);
+  const user = useAuthStore(s => s.user);
 
   const handleUserClick = async (userId) => {
-    const conv = await createConversation.mutateAsync({ participantId: userId });
-    setActiveConversation(conv.data.conversation);
+    try {
+      const conv = await createConversation.mutateAsync({ participantId: userId });
+      const conversation = conv.data?.conversation;
+      
+      if (conversation) {
+        // Format conversation to match expected structure
+        const otherParticipant = conversation.participant1Id === user?.id 
+          ? conversation.participant2 
+          : conversation.participant1;
+
+        const formattedConversation = {
+          ...conversation,
+          otherParticipant,
+          unreadCount: conversation.participant1Id === user?.id 
+            ? conversation.unreadCount1 
+            : conversation.unreadCount2
+        };
+
+        setActiveConversation(formattedConversation);
+      }
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    }
   };
 
   const users = data?.data?.users || [];
