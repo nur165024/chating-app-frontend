@@ -15,7 +15,7 @@ export const MessageInput = () => {
   const handleSubmit = useCallback((e) => {
     e.preventDefault(); 
     
-    if (!message.trim() || !activeConversation || !socket) return;
+    if (!message.trim() || !activeConversation?.otherParticipant || !socket) return;
 
     // Mark unread messages as read before sending
     const unreadMessages = data?.data?.messages?.filter(
@@ -29,7 +29,7 @@ export const MessageInput = () => {
     // Send new message
     socket.emit('message:send', {
       conversationId: activeConversation.id,
-      receiverId: activeConversation.otherParticipant.id,
+      receiverId: activeConversation.otherParticipant?.id, // Optional chaining
       content: message.trim()
     });
 
